@@ -109,75 +109,48 @@ class Filter_Window:
         
     def create_filter_text(self):
         
-        final_text = ''
-        
-        show_text = ''
+        filter_text = ''
         
         if self.time_bool.get() == True or self.irr_bool.get() == True or self.pr_bool.get() == True or self.ava_bool.get() == True:
-            final_text += 'WHERE '
-            show_text += 'WHERE '
+            filter_text += 'WHERE '
         
-        final_params = []
         
         if self.time_bool.get() == True:
-            if str(self.combobox_time.get()) == 'between':
-                final_text += 'Timestamp ' + 'BETWEEN ? AND ?' 
-                show_text += 'Timestamp ' + 'BETWEEN ' + str(self.entry_time_1.get()) + ' AND ' + str(self.entry_time_2.get())
-                final_params.append(str(self.entry_time_1.get()))
-                final_params.append(str(self.entry_time_2.get()))
+            if str(self.combobox_time.get()) == 'between': 
+                filter_text += 'Timestamp ' + 'BETWEEN ' + '"{}"'.format(str(self.entry_time_1.get())) + ' AND ' + '"{}"'.format(str(self.entry_time_2.get()))
             else:
-                final_text += 'Timestamp ' + str(self.combobox_time.get()) + '?' 
-                show_text += 'Timestamp ' + str(self.combobox_time.get()) + str(self.entry_time_1.get())
-                final_params.append(str(self.entry_time_1.get()))
+                filter_text += 'Timestamp ' + str(self.combobox_time.get()) + '"{}"'.format(str(self.entry_time_1.get()))
             
             
         if self.irr_bool.get() == True:
-            if final_text != 'WHERE ':
+            if filter_text != 'WHERE ':
                 if str(self.combobox_irr.get()) == 'between':
-                    final_text += ' AND Irradiance ' + 'BETWEEN ? AND ?'
-                    show_text += ' AND Irradiance ' + 'BETWEEN ' + str(self.entry_irr_1.get()) + ' AND ' + str(self.entry_irr_2.get())
-                    final_params.append(str(self.entry_irr_1.get()))
-                    final_params.append(str(self.entry_irr_2.get()))
+                    filter_text += ' AND Irradiance ' + 'BETWEEN ' + str(self.entry_irr_1.get()) + ' AND ' + str(self.entry_irr_2.get())
+
                 else:
-                    final_text += ' AND Irradiance ' + str(self.combobox_irr.get()) + '?'
-                    show_text += ' AND Irradiance ' + str(self.combobox_irr.get()) +  str(self.entry_irr_1.get())
-                    final_params.append(str(self.entry_irr_1.get()))
+                    filter_text += ' AND Irradiance ' + str(self.combobox_irr.get()) +  str(self.entry_irr_1.get())
             else:
                 if str(self.combobox_irr.get()) == 'between':
-                    final_text += 'Irradiance ' + 'BETWEEN ? AND ?'
-                    show_text += 'Irradiance ' + 'BETWEEN ' + str(self.entry_irr_1.get()) + ' AND ' + str(self.entry_irr_2.get())
-                    final_params.append(str(self.entry_irr_1.get()))
-                    final_params.append(str(self.entry_irr_2.get()))
+                    filter_text += 'Irradiance ' + 'BETWEEN ' + str(self.entry_irr_1.get()) + ' AND ' + str(self.entry_irr_2.get())
                 else:
-                    final_text += 'Irradiance ' + str(self.combobox_irr.get()) + '?'
-                    show_text += 'Irradiance ' + str(self.combobox_irr.get()) + str(self.entry_irr_1.get())
-                    final_params.append(str(self.entry_irr_1.get()))
+                    filter_text += 'Irradiance ' + str(self.combobox_irr.get()) + str(self.entry_irr_1.get())
             
         if self.pr_bool.get() == True:
-            if final_text != 'WHERE ':
-                final_text += ' AND PR_Exclude=?'
-                show_text += ' AND PR_Exclude=' + str(self.pr_select.get())
-                final_params.append(str(self.pr_select.get()))
+            if filter_text != 'WHERE ':
+                filter_text += ' AND PR_Exclude=' + str(self.pr_select.get())
             else:
-                final_text += 'PR_Exclude=?'
-                show_text += 'PR_Exclude=' + str(self.pr_select.get())
-                final_params.append(str(self.pr_select.get()))
+                filter_text += 'PR_Exclude=' + str(self.pr_select.get())
             
         if self.ava_bool.get() == True:
-            if final_text != 'WHERE ':
-                final_text += ' AND AVA=?'
-                show_text += ' AND AVA=' + str(self.ava_select.get())
-                final_params.append(str(self.ava_select.get()))
+            if filter_text != 'WHERE ':
+                filter_text += ' AND AVA=' + str(self.ava_select.get())
             else:
-                final_text += 'AVA=?'
-                show_text += 'AVA=' + str(self.ava_select.get())
-                final_params.append(str(self.ava_select.get()))
+                filter_text += 'AVA=' + str(self.ava_select.get())
         
         
-        self.filter_message['text'] = show_text
+        self.filter_message['text'] = filter_text
         
-        #return final_text, final_params
-        return show_text
+        return filter_text
         
         
         
