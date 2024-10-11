@@ -171,7 +171,7 @@ class DB:
         export_button.grid(row=1, column=2, sticky=E)
         
     def export_csv(self, name):
-        query = 'SELECT * FROM ' + str(self.combobox_table.get()) + ' ORDER BY Timestamp desc'
+        query = 'SELECT * FROM ' + str(self.combobox_table.get()) + ' ' + self.filter +  ' ORDER BY Timestamp desc'
         
         with sqlite3.connect(self.db_filename) as conn:
             print(conn)
@@ -234,31 +234,36 @@ class DB:
     
     
     def on_modify_entry_button_clicked(self):
+        # Use size of treeview.selection for if statement
         self.message['text'] = ''
-        try:
-            self.tree.item(self.tree.selection())['values'][0]
-        except IndexError as e:
+        if len(self.tree.selection()) <= 0:
             self.message['text'] = 'No item selected to modify'
             return
-        self.open_modify_window()
-        self.view_entries()  
+        self.open_modify_window(len(self.tree.selection()))
+        self.view_entries()   
         
     def open_modify_window(self):
-        timestamp = self.tree.item(self.tree.selection())['text']
-        self.transient = Toplevel()
-        self.transient.title('Update Entry')
-        Label(self.transient, text='Timestamp:').grid(row=0, column=1)
-        Entry(self.transient, textvariable=StringVar(
-            self.transient, value=timestamp), state='readonly').grid(row=0, column=2)
-        self.combobox_mod = ttk.Combobox(self.transient, textvariable=StringVar(), values=self.headers[1:])
-        self.combobox_mod.grid(row=1, column=1)
-        new_value_entry_widget = Entry(self.transient)
-        new_value_entry_widget.grid(row=1, column=2) 
-        
-        Button(self.transient, text='Update Entry', command=lambda: self.update_entries(self.combobox_mod.get(),
-            new_value_entry_widget.get(), timestamp)).grid(row=3, column=0, sticky=E)
-            
-        self.transient.mainloop()
+        selected_items = self.tree.selection()
+       timestamp = self.tree.item(selected_items[0])['text']
+       self.transient = Toplevel()
+       self.transient.title('Update Entry')
+       Label(self.transient, text='Timestamp:').grid(row=0, column=0)
+       Entry(self.transient, textvariable=StringVar(
+           self.transient, value=timestamp), state='readonly').grid(row=0, column=1)
+       self.combobox_mod = ttk.Combobox(self.transient, textvariable=StringVar(), values=self.headers[1:])
+       self.combobox_mod.grid(row=1, column=1)
+       new_value_entry_widget = Entry(self.transient)
+       new_value_entry_widget.grid(row=1, column=2)
+       
+       if size > 1:
+           timestamp2 = self.tree.item(selected_items[-1])['text']
+           Entry(self.transient, textvariable=StringVar(
+               self.transient, value=timestamp2), state='readonly').grid(row=0, column=2)
+       
+       Button(self.transient, text='Update Entry', command=lambda: self.update_entries(self.combobox_mod.get(),
+           new_value_entry_widget.get(), timestamp, timestamp2)).grid(row=3, column=0, sticky=E)
+           
+       self.transient.mainloop()
  
 
 # =============================================================================
@@ -330,13 +335,20 @@ class DB:
             
         
     def update_entries(self, param, newval, timestamp):
-        
-        query = 'UPDATE ' + str(self.combobox_table.get()) + ' SET ' + str(param) + '=? WHERE Timestamp =?'
-        parameters = (newval, timestamp)
-        self.execute_db_query(query, parameters)
-        self.transient.destroy()
-        self.message['text'] = 'Entry {} of {} modified'.format(param, timestamp)
-        self.view_entries()
+       #based on size of parameter (more timestamps) change query
+       if timestamp2 != None:
+           query = 'UPDATE ' + str(self.combobox_table.get()) + ' SET ' + str(param) + '=? WHERE Timestamp BETWEEN ? AND ?'
+           parameters = (newval, timestamp, timestamp2)
+       else:
+           query = 'UPDATE ' + str(self.combobox_table.get()) + ' SET ' + str(param) + '=? WHERE Timestamp =?'
+           parameters = (newval, timestamp)
+       self.execute_db_query(query, parameters)
+       self.transient.destroy()
+       if timestamp2 !=None:
+           self.message['text'] = 'Entries {} from {} until {} modified'.format(param, timestamp, timestamp2)
+       else:
+           self.message['text'] = 'Entry {} of {} modified'.format(param, timestamp)
+       self.view_entries()
     
         
     def BrowseFiles(self):
